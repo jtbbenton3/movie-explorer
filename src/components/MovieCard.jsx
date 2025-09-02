@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { buildImgUrl } from "../lib/tmdb";
 
 export default function MovieCard({ movie }) {
@@ -6,20 +7,22 @@ export default function MovieCard({ movie }) {
     typeof movie.vote_average === "number" ? movie.vote_average.toFixed(1) : "—";
 
   return (
-    <div className="movie-card" style={cardStyle}>
-      <div style={imgWrapStyle}>
-        <img
-          src={buildImgUrl(movie.poster_path)}
-          alt={title}
-          style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }}
-          loading="lazy"
-        />
+    <Link to={`/movie/${movie.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+      <div className="movie-card" style={cardStyle}>
+        <div style={imgWrapStyle}>
+          <img
+            src={buildImgUrl(movie.poster_path)}
+            alt={title}
+            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }}
+            loading="lazy"
+          />
+        </div>
+        <div style={{ padding: "8px 4px" }}>
+          <h3 style={titleStyle} title={title}>{title}</h3>
+          <p style={{ margin: 0, opacity: 0.8 }}>⭐ {rating}</p>
+        </div>
       </div>
-      <div style={{ padding: "8px 4px" }}>
-        <h3 style={titleStyle} title={title}>{title}</h3>
-        <p style={{ margin: 0, opacity: 0.8 }}>⭐ {rating}</p>
-      </div>
-    </div>
+    </Link>
   );
 }
 
