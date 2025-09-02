@@ -8,7 +8,7 @@ export default function MovieDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [status, setStatus] = useState("loading"); // loading | success | error
+  const [status, setStatus] = useState("loading"); 
   const [error, setError] = useState(null);
   const [movie, setMovie] = useState(null);
   const [credits, setCredits] = useState(null);
@@ -19,7 +19,7 @@ export default function MovieDetail() {
     async function load() {
       try {
         setStatus("loading");
-        // Fetch detail and credits in parallel
+        
         const [detail, creditData] = await Promise.all([
           fetchJson(`/movie/${id}`, {}, controller.signal),
           fetchJson(`/movie/${id}/credits`, {}, controller.signal),
