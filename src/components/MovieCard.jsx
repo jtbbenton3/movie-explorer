@@ -1,17 +1,18 @@
 import { Link } from "react-router-dom";
-import { buildImgUrl } from "../lib/tmdb";
+import { buildImgUrl } from "../lib/tvmaze";
 
 export default function MovieCard({ movie }) {
-  const title = movie.title || movie.name || "Untitled";
+  // For TVMaze, 'movie' is a SHOW object
+  const title = movie?.name || "Untitled";
   const rating =
-    typeof movie.vote_average === "number" ? movie.vote_average.toFixed(1) : "—";
+    typeof movie?.rating?.average === "number" ? movie.rating.average.toFixed(1) : "—";
 
   return (
     <Link to={`/movie/${movie.id}`} style={{ textDecoration: "none", color: "inherit" }}>
       <div className="movie-card" style={cardStyle}>
         <div style={imgWrapStyle}>
           <img
-            src={buildImgUrl(movie.poster_path)}
+            src={buildImgUrl(movie?.image, "medium")}
             alt={title}
             style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }}
             loading="lazy"
