@@ -8,7 +8,7 @@ import NotFound from "./pages/NotFound";
 
 export default function App() {
   return (
-    <BrowserRouter basename="/movie-explorer">
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <AppHeader />
       <Routes>
         <Route path="/" element={<HomeTrending />} />

@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function NotFound() {
   return (
     <main style={{ padding: 40, maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
@@ -5,7 +7,7 @@ export default function NotFound() {
       <p style={{ opacity: 0.8, marginBottom: 24 }}>
         The page you’re looking for doesn’t exist.
       </p>
-      <a href="/" style={btn}>← Go home</a>
+      <Link to="/" style={btn}>← Go home</Link>
     </main>
   );
 }
