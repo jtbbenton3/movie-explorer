@@ -1,19 +1,45 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import useDebouncedValue from "../hooks/useDebouncedValue";
 
 export default function SearchBar() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const [text, setText] = useState(params.get("q") || "");
+  const location = useLocation();
+
+  
+  const initial = location.pathname.startsWith("/search") ? (params.get("q") || "") : "";
+  const [text, setText] = useState(initial);
   const debounced = useDebouncedValue(text, 400);
 
-  // When user stops typing, update the URL to /search?q=...
+  
+  
   useEffect(() => {
-    // If empty, don't navigate to /search—stay on whatever page.
-    if (debounced.trim().length === 0) return;
-    navigate(`/search?q=${encodeURIComponent(debounced)}&page=1`);
-  }, [debounced, navigate]);
+    const q = debounced.trim();
+    if (q.length === 0) return;
+
+    const canNavigateFromHere =
+      location.pathname === "/" || location.pathname.startsWith("/search");
+
+    if (!canNavigateFromHere) return;
+
+    navigate(`/search?q=${encodeURIComponent(q)}&page=1`, {
+      
+      replace: location.pathname.startsWith("/search"),
+    });
+  }, [debounced, navigate, location.pathname]);
+
+  
+  useEffect(() => {
+    if (!location.pathname.startsWith("/search")) {
+      setText("");
+    } else {
+      
+      const urlQ = params.get("q") || "";
+      if (urlQ !== text) setText(urlQ);
+    }
+    
+  }, [location.pathname, params]);
 
   return (
     <input
