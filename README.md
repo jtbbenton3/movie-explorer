@@ -4,7 +4,7 @@ A small React app for browsing **TV shows** using the public **TVMaze API** (no 
 Features include a “Now Airing (US)” view, search with client-side paging, and a show detail page with cast.
 
 ## Live Demo
-[Try Show Explorer on GitHub Pages](https://jtbbenton3.github.io/movie-explorer/)
+(https://jtbbenton3.github.io/movie-explorer/)
 
 ## Tech
 - React + Vite
