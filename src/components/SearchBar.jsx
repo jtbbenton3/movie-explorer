@@ -19,8 +19,8 @@ export default function SearchBar() {
     <input
       value={text}
       onChange={(e) => setText(e.target.value)}
-      placeholder="Search movies…"
-      aria-label="Search movies"
+      placeholder="Search shows…"
+      aria-label="Search shows"
       style={inputStyle}
     />
   );

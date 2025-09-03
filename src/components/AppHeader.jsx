@@ -3,7 +3,7 @@ import SearchBar from "./SearchBar";
 export default function AppHeader() {
   return (
     <header style={wrap}>
-      <a href="/" style={logo}>🎬 Movie Explorer</a>
+      <a href="/" style={logo}>📺 Show Explorer</a>
       <SearchBar />
     </header>
   );
