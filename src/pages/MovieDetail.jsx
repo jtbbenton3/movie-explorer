@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchJson, buildImgUrl } from "../lib/tmdb";
+import { fetchJson, buildImgUrl } from "../lib/tvmaze";
 import SkeletonCard from "../components/SkeletonCard";
 import ErrorBanner from "../components/ErrorBanner";
 
@@ -10,8 +10,8 @@ export default function MovieDetail() {
 
   const [status, setStatus] = useState("loading"); 
   const [error, setError] = useState(null);
-  const [movie, setMovie] = useState(null);
-  const [credits, setCredits] = useState(null);
+  const [show, setShow] = useState(null);
+  const [cast, setCast] = useState([]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -19,13 +19,17 @@ export default function MovieDetail() {
     async function load() {
       try {
         setStatus("loading");
-        
-        const [detail, creditData] = await Promise.all([
-          fetchJson(`/movie/${id}`, {}, controller.signal),
-          fetchJson(`/movie/${id}/credits`, {}, controller.signal),
-        ]);
-        setMovie(detail);
-        setCredits(creditData);
+        // Detail + embedded cast in one call
+        const detail = await fetchJson(`/shows/${id}`, { embed: "cast" }, controller.signal);
+        setShow(detail);
+        const embeddedCast = Array.isArray(detail?._embedded?.cast) ? detail._embedded.cast : [];
+        const topBilled = embeddedCast.slice(0, 10).map((c) => ({
+          id: c?.person?.id || `${c?.person?.name}-${c?.character?.name}`,
+          name: c?.person?.name || "—",
+          character: c?.character?.name || "—",
+          image: c?.person?.image || null,
+        }));
+        setCast(topBilled);
         setStatus("success");
       } catch (err) {
         if (err.name === "AbortError") return;
@@ -64,11 +68,12 @@ export default function MovieDetail() {
   }
 
   // SUCCESS
-  const year = movie?.release_date ? new Date(movie.release_date).getFullYear() : "—";
-  const runtime = typeof movie?.runtime === "number" ? formatRuntime(movie.runtime) : "—";
-  const rating = typeof movie?.vote_average === "number" ? movie.vote_average.toFixed(1) : "—";
-  const genres = Array.isArray(movie?.genres) ? movie.genres.map(g => g.name).join(", ") : "—";
-  const cast = Array.isArray(credits?.cast) ? credits.cast.slice(0, 10) : [];
+  const title = show?.name || "Untitled";
+  const year = show?.premiered ? new Date(show.premiered).getFullYear() : "—";
+  const runtime = typeof show?.runtime === "number" ? formatRuntime(show.runtime) : "—";
+  const rating = typeof show?.rating?.average === "number" ? show.rating.average.toFixed(1) : "—";
+  const genres = Array.isArray(show?.genres) ? show.genres.join(", ") : "—";
+  const summaryText = stripHtml(show?.summary || "No summary available.");
 
   return (
     <main style={wrap}>
@@ -76,19 +81,19 @@ export default function MovieDetail() {
 
       <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: 20 }}>
         <img
-          src={buildImgUrl(movie.poster_path, "w342")}
-          alt={movie.title}
+          src={buildImgUrl(show?.image, "original")}
+          alt={title}
           style={{ width: 200, borderRadius: 12, objectFit: "cover", background: "#222" }}
         />
 
         <div>
           <h1 style={{ margin: "0 0 6px 0" }}>
-            {movie.title} <span style={{ opacity: 0.7, fontWeight: 400 }}>({year})</span>
+            {title} <span style={{ opacity: 0.7, fontWeight: 400 }}>({year})</span>
           </h1>
           <p style={{ margin: "6px 0", opacity: 0.9 }}>
             ⭐ {rating} • {runtime} • {genres}
           </p>
-          <p style={{ marginTop: 16, lineHeight: 1.6 }}>{movie.overview || "No overview available."}</p>
+          <p style={{ marginTop: 16, lineHeight: 1.6 }}>{summaryText}</p>
         </div>
       </div>
 
@@ -99,7 +104,7 @@ export default function MovieDetail() {
             <div key={person.id} style={castCard}>
               <div style={{ width: "100%", aspectRatio: "2/3", background: "#222", borderRadius: 10, overflow: "hidden" }}>
                 <img
-                  src={buildImgUrl(person.profile_path, "w185")}
+                  src={buildImgUrl(person.image, "medium")}
                   alt={person.name}
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   loading="lazy"
@@ -107,7 +112,7 @@ export default function MovieDetail() {
               </div>
               <div style={{ marginTop: 8 }}>
                 <div style={{ fontWeight: 600 }}>{person.name}</div>
-                <div style={{ opacity: 0.8 }}>{person.character || "—"}</div>
+                <div style={{ opacity: 0.8 }}>{person.character}</div>
               </div>
             </div>
           ))}
@@ -124,6 +129,12 @@ function formatRuntime(mins) {
   if (!h) return `${m}m`;
   if (!m) return `${h}h`;
   return `${h}h ${m}m`;
+}
+
+function stripHtml(html) {
+  const tmp = document.createElement("div");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
 }
 
 const wrap = { padding: 20, maxWidth: 1200, margin: "0 auto" };
