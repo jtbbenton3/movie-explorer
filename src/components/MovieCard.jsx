@@ -2,29 +2,45 @@ import { Link } from "react-router-dom";
 import { buildImgUrl } from "../lib/tvmaze";
 
 export default function MovieCard({ movie }) {
-  // For TVMaze, 'movie' is a SHOW object
-  const title = movie?.name || "Untitled";
+  // TVMaze shows
+  const id = movie?.id;
+  const title = movie?.name || movie?.title || "Untitled";
   const rating =
-    typeof movie?.rating?.average === "number" ? movie.rating.average.toFixed(1) : "—";
+    typeof movie?.rating?.average === "number"
+      ? movie.rating.average.toFixed(1)
+      : "—";
 
-  return (
-    <Link to={`/movie/${movie.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-      <div className="movie-card" style={cardStyle}>
-        <div style={imgWrapStyle}>
-          <img
-            src={buildImgUrl(movie?.image, "medium")}
-            alt={title}
-            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }}
-            loading="lazy"
-          />
-        </div>
-        <div style={{ padding: "8px 4px" }}>
-          <h3 style={titleStyle} title={title}>{title}</h3>
-          <p style={{ margin: 0, opacity: 0.8 }}>⭐ {rating}</p>
-        </div>
+  const image = buildImgUrl(movie?.image, "medium");
+
+  const CardInner = (
+    <div className="movie-card" style={cardStyle}>
+      <div style={imgWrapStyle}>
+        <img
+          src={image}
+          alt={title}
+          style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }}
+          loading="lazy"
+        />
       </div>
-    </Link>
+      <div style={{ padding: "8px 4px" }}>
+        <h3 style={titleStyle} title={title}>{title}</h3>
+        <p style={{ margin: 0, opacity: 0.8 }}>⭐ {rating}</p>
+      </div>
+    </div>
   );
+
+  // If no ID, render a non-link card to avoid broken navigation
+  return id
+    ? (
+      <Link to={`/movie/${id}`} style={{ textDecoration: "none", color: "inherit" }}>
+        {CardInner}
+      </Link>
+    )
+    : (
+      <div style={{ textDecoration: "none", color: "inherit", cursor: "default" }}>
+        {CardInner}
+      </div>
+    );
 }
 
 const cardStyle = {
