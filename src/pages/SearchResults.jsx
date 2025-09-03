@@ -1,32 +1,39 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { fetchJson } from "../lib/tmdb";
+import { fetchJson } from "../lib/tvmaze";
 import MovieCard from "../components/MovieCard";
 import SkeletonCard from "../components/SkeletonCard";
 import ErrorBanner from "../components/ErrorBanner";
 
+const PAGE_SIZE = 24;
+
 export default function SearchResults() {
   const [params, setParams] = useSearchParams();
   const query = (params.get("q") || "").trim();
-  const pageParam = Number(params.get("page") || "1");
 
   const [status, setStatus] = useState("idle"); // idle | loading | success | error
-  const [movies, setMovies] = useState([]);
+  const [allResults, setAllResults] = useState([]);
   const [error, setError] = useState(null);
-  const [page, setPage] = useState(pageParam);
-  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(Number(params.get("page") || "1"));
 
   useEffect(() => {
-    if (!query) return;
+    if (!query) {
+      setStatus("idle");
+      setAllResults([]);
+      setPage(1);
+      return;
+    }
     const controller = new AbortController();
     setStatus("loading");
+    setPage(1);
 
-    fetchJson("/search/movie", { query, page }, controller.signal)
+    // TVMaze search: [{ score, show }]
+    fetchJson("/search/shows", { q: query }, controller.signal)
       .then((data) => {
-        const results = Array.isArray(data?.results) ? data.results : [];
-        // If page=1, replace; otherwise append
-        setMovies((prev) => (page === 1 ? results : [...prev, ...results]));
-        setTotalPages(data?.total_pages || 1);
+        const shows = (Array.isArray(data) ? data : [])
+          .map((d) => d.show)
+          .filter(Boolean);
+        setAllResults(shows);
         setStatus("success");
       })
       .catch((err) => {
@@ -36,7 +43,7 @@ export default function SearchResults() {
       });
 
     return () => controller.abort();
-  }, [query, page]);
+  }, [query]);
 
   // Keep URL page param in sync when page changes
   useEffect(() => {
@@ -44,9 +51,15 @@ export default function SearchResults() {
     setParams({ q: query, page: String(page) }, { replace: true });
   }, [query, page, setParams]);
 
+  const totalPages = Math.max(1, Math.ceil(allResults.length / PAGE_SIZE));
+  const visible = useMemo(() => {
+    const end = page * PAGE_SIZE;
+    return allResults.slice(0, end);
+  }, [allResults, page]);
+
   const content = useMemo(() => {
     if (!query) {
-      return <p style={{ opacity: 0.8, textAlign: "center" }}>Type in the search box to find movies.</p>;
+      return <p style={{ opacity: 0.8, textAlign: "center" }}>Type in the search box to find shows.</p>;
     }
     if (status === "loading" && page === 1) {
       return (
@@ -58,13 +71,13 @@ export default function SearchResults() {
     if (status === "error") {
       return <ErrorBanner message={error} onRetry={() => setPage(1)} />;
     }
-    if (movies.length === 0) {
+    if (visible.length === 0) {
       return <p style={{ opacity: 0.8, textAlign: "center" }}>No results for “{query}”.</p>;
     }
     return (
       <>
         <div style={grid}>
-          {movies.map((m) => <MovieCard key={m.id} movie={m} />)}
+          {visible.map((m) => <MovieCard key={m.id} movie={m} />)}
         </div>
         {status === "loading" && page > 1 && (
           <div style={{ marginTop: 16 }}>
@@ -78,7 +91,7 @@ export default function SearchResults() {
         )}
       </>
     );
-  }, [query, status, error, movies, page, totalPages]);
+  }, [query, status, error, visible, page, totalPages]);
 
   return (
     <main style={{ padding: 20, maxWidth: 1200, margin: "0 auto" }}>
