@@ -1,3 +1,4 @@
+// src/App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 import AppHeader from "./components/AppHeader";
@@ -11,6 +12,8 @@ export default function App() {
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <AppHeader />
       <Routes>
+        
+        <Route path="" element={<HomeTrending />} />
         <Route path="/" element={<HomeTrending />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/movie/:id" element={<MovieDetail />} />
