@@ -29,7 +29,7 @@ export default function MovieCard({ movie }) {
     </div>
   );
 
-  // If no ID, render a non-link card to avoid broken navigation
+  
   return id
     ? (
       <Link to={`/movie/${id}`} style={{ textDecoration: "none", color: "inherit" }}>

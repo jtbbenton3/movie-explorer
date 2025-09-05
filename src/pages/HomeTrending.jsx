@@ -5,7 +5,7 @@ import SkeletonCard from "../components/SkeletonCard";
 import ErrorBanner from "../components/ErrorBanner";
 
 export default function HomeTrending() {
-  const [status, setStatus] = useState("loading"); // loading | success | error
+  const [status, setStatus] = useState("loading"); 
   const [shows, setShows] = useState([]);
   const [error, setError] = useState(null);
 
@@ -13,7 +13,7 @@ export default function HomeTrending() {
     const controller = new AbortController();
     setStatus("loading");
 
-    // Today's date in YYYY-MM-DD
+    // Today's date 
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, "0");
@@ -23,7 +23,7 @@ export default function HomeTrending() {
     // TVMaze: daily schedule
     fetchJson("/schedule", { country: "US", date: dateStr }, controller.signal)
       .then((data) => {
-        // Items look like { id, name (episode), show: { ... } }
+        
         const map = new Map();
         (Array.isArray(data) ? data : []).forEach((item) => {
           const show = item?.show;

@@ -45,7 +45,7 @@ export default function SearchResults() {
     return () => controller.abort();
   }, [query]);
 
-  // Keep URL page param in sync when page changes
+  
   useEffect(() => {
     if (!query) return;
     setParams({ q: query, page: String(page) }, { replace: true });

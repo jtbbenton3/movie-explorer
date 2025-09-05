@@ -19,7 +19,7 @@ export default function MovieDetail() {
     async function load() {
       try {
         setStatus("loading");
-        // Detail + embedded cast in one call
+        
         const detail = await fetchJson(`/shows/${id}`, { embed: "cast" }, controller.signal);
         setShow(detail);
         const embeddedCast = Array.isArray(detail?._embedded?.cast) ? detail._embedded.cast : [];
